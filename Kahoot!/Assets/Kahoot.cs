@@ -18,9 +18,8 @@ public class Kahoot : MonoBehaviour {
 
     public Renderer Background;
 
-    public TextMesh GamePIN;
     public TextMesh EnterContinue;
-
+    public TextMesh GamePIN;
     public TextMesh TheQuestion;
 
     public Material[] ColorsForButtons;
@@ -39,24 +38,25 @@ public class Kahoot : MonoBehaviour {
 
     int[] Shuffler = {0, 1, 2, 3};
     List<int> PreviousQuestions = new List<int> {};
-    int QuestionNumber = 0;
     int Answer;
     int Batteries;
-    int Ports;
+    int Goal;
     int Minutes;
-    bool? Indicators;
     int Modules;
+    int Ports;
+    int QuestionNumber = 0;
     int SerialNumberLast;
     int SerialNumberLetters;
     int Stage;
-    int Goal;
 
     private KeyCode[] TheKeys = {
         KeyCode.Backspace, KeyCode.Return, KeyCode.Alpha1, KeyCode.Keypad1, KeyCode.Alpha2, KeyCode.Keypad2, KeyCode.Alpha3, KeyCode.Keypad3,
         KeyCode.Alpha4, KeyCode.Keypad4, KeyCode.Alpha5, KeyCode.Keypad5, KeyCode.Alpha6, KeyCode.Keypad6, KeyCode.Alpha7, KeyCode.Keypad7,
-        KeyCode.Alpha8, KeyCode.Keypad8, KeyCode.Alpha9, KeyCode.Keypad9, KeyCode.Alpha0, KeyCode.Keypad0,
+        KeyCode.Alpha8, KeyCode.Keypad8, KeyCode.Alpha9, KeyCode.Keypad9, KeyCode.Alpha0, KeyCode.Keypad0
     };
 
+    string[] ColorsForLog = {"red", "blue", "yellow", "green"};
+    string[] PossibleCorrects = {"Genius machine?", "Room A9\nPerfections", "Lightning Smart?", "Pure Genius?"};
     string[] Questions = {
       "How many batteries\nare on the bomb?",
       "How many ports\nare on the bomb?",
@@ -66,57 +66,53 @@ public class Kahoot : MonoBehaviour {
       "The last digit of the\nserial number is?",
       "There are _ letters in\nthe serial number."
     };
-    string[] ColorsForLog = {"red", "blue", "yellow", "green"};
-    string TheLetters = "BE11223344556677889900";
     string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ***0123456789";
-    string InputCommand = String.Empty;
     string Code = String.Empty;
+    string InputCommand = String.Empty;
+    string TheLetters = "BE11223344556677889900";
 
     float Hue = 0f;
     float Saturation = .45f;
     float Value = 1f;
 
-    bool Focused;
     bool Activated;
+    bool Focused;
     bool Highlighted;
+    bool? Indicators = null;
 
     void Awake () {
-        Hue = UnityEngine.Random.Range(0, 1f);
-        StartCoroutine(BackgroundColorChanger());
         moduleId = moduleIdCounter++;
         BigIfTrue.OnHighlight += delegate () { MusicStarter(); Highlighted = true;};
-        BigIfTrue.OnHighlightEnded += delegate () { if (!Focused) MusicEnder(); Highlighted = false;};
+        BigIfTrue.OnHighlightEnded += delegate () { MusicEnder(); Highlighted = false;};
         BigIfTrue.OnFocus += delegate () { Focused = true; };
-        BigIfTrue.OnDefocus += delegate () { Focused = false;};
+        BigIfTrue.OnDefocus += delegate () { MusicEnder(); Focused = false;};
         StageTwoShit.gameObject.SetActive(false);
+        foreach (KMSelectable Button in AnswerChoicesButtons) {
+          Button.OnInteract += delegate () { ButtonPress(Button); return false; };
+        }
+        EnterButton.OnInteract += delegate () { EnterPress(); return false; };
         if (Application.isEditor) {
             Focused = true;
         }
+    }
 
-        Batteries = Bomb.GetBatteryCount();
-        Ports = Bomb.GetPortCount();
-        Minutes = (int) (Bomb.GetTime() / 60);
-        if (Bomb.GetOnIndicators().Count() > Bomb.GetOffIndicators().Count())
-          Indicators = true;
-        else if (Bomb.GetOnIndicators().Count() < Bomb.GetOffIndicators().Count())
-          Indicators = false;
-        else
-          Indicators = null;
-        Modules = Bomb.GetSolvableModuleNames().Count();
-        SerialNumberLast = Bomb.GetSerialNumberNumbers().Last();
-        SerialNumberLetters = Bomb.GetSerialNumberLetters().Count();
-
-        foreach (KMSelectable Button in AnswerChoicesButtons) {
-            Button.OnInteract += delegate () { ButtonPress(Button); return false; };
-        }
-
-        EnterButton.OnInteract += delegate () { EnterPress(); return false; };
-
-        Goal = UnityEngine.Random.Range(3, 6);
-
-        for (int i = 0; i < 6; i++)
-          Code += (Alphabet.IndexOf(Bomb.GetSerialNumber()[i]) + 1) % 10;
-        Debug.LogFormat("[Kahoot #{0}] The code for the Kahoot! game is {1}.", moduleId, Code);
+    void Start () {
+      Hue = UnityEngine.Random.Range(0, 1f);
+      StartCoroutine(BackgroundColorChanger());
+      Modules = Bomb.GetSolvableModuleNames().Count();
+      Minutes = (int) (Bomb.GetTime() / 60);
+      Batteries = Bomb.GetBatteryCount();
+      Ports = Bomb.GetPortCount();
+      if (Bomb.GetOnIndicators().Count() > Bomb.GetOffIndicators().Count())
+        Indicators = true;
+      else if (Bomb.GetOnIndicators().Count() < Bomb.GetOffIndicators().Count())
+        Indicators = false;
+      SerialNumberLast = Bomb.GetSerialNumberNumbers().Last();
+      SerialNumberLetters = Bomb.GetSerialNumberLetters().Count();
+      Goal = UnityEngine.Random.Range(3, 6);
+      for (int i = 0; i < 6; i++)
+        Code += (Alphabet.IndexOf(Bomb.GetSerialNumber()[i]) + 1) % 10;
+      Debug.LogFormat("[Kahoot #{0}] The code for the Kahoot! game is {1}.", moduleId, Code);
     }
 
     void ButtonPress (KMSelectable Button) {
@@ -138,7 +134,7 @@ public class Kahoot : MonoBehaviour {
             StageTwoShit.gameObject.SetActive(false);
             StopAllCoroutines();
             StartCoroutine(BackgroundColorChanger());
-            TheQuestion.text = "Pure genius\nor guesswork?";
+            TheQuestion.text = PossibleCorrects[UnityEngine.Random.Range(0, PossibleCorrects.Length)];
           }
           else {
             TheQuestion.text = "Were you tooooooo\nfast?";
@@ -153,7 +149,8 @@ public class Kahoot : MonoBehaviour {
     }
 
     void MusicStarter () {
-      SoundIThink = Audio.PlaySoundAtTransformWithRef("Kahoot!", transform);
+      if (SoundIThink == null)
+        SoundIThink = Audio.PlaySoundAtTransformWithRef("Kahoot!", transform);
     }
 
     void MusicEnder () {
@@ -176,9 +173,8 @@ public class Kahoot : MonoBehaviour {
           InputCommand = String.Empty;
         }
       }
-      else {
+      else
         StartCoroutine(QuestionChooser());
-      }
     }
 
     IEnumerator BackgroundColorChanger () {
@@ -193,6 +189,10 @@ public class Kahoot : MonoBehaviour {
     }
 
     void Update () {
+      if (!Focused && !Highlighted) {
+        SoundIThink.StopSound();
+        SoundIThink = null;
+      }
       for (int i = 0; i < TheKeys.Count(); i++) {
           if (Input.GetKeyDown(TheKeys[i]) && Focused && !Activated) {
             if (InputCommand.Length == 6 && TheLetters[i].ToString() != "B".ToString() && TheLetters[i].ToString() != "E".ToString())
@@ -203,9 +203,8 @@ public class Kahoot : MonoBehaviour {
               InputCommand = InputCommand.Substring(0, InputCommand.Length - 1);
               GamePIN.text = InputCommand.ToUpper();
             }
-            else if (TheLetters[i].ToString() == "E".ToString()) {
+            else if (TheLetters[i].ToString() == "E".ToString())
               EnterButton.OnInteract();
-            }
             else
               HandleKey(TheLetters[i]);
           }
@@ -216,10 +215,6 @@ public class Kahoot : MonoBehaviour {
         }
         else
           GamePIN.color = new Color32(0, 0, 0, 255);
-        if (!Focused && !Highlighted && SoundIThink != null) {
-          SoundIThink.StopSound();
-          SoundIThink = null;
-        }
     }
 
     void HandleKey (char c) {
@@ -484,7 +479,7 @@ public class Kahoot : MonoBehaviour {
     }
 
     bool? SquareAndPrimeChecker (int M) {
-      if (M <= 1) return null;
+      if (M == 1) return false;
       if (M == 2) return true;
       if (M % 2 == 0) goto SquareChecker;
 
@@ -498,7 +493,7 @@ public class Kahoot : MonoBehaviour {
 
       SquareChecker:
       double SquareTime = M;
-      if (Math.Sqrt(M) % 1 == 0)
+      if (Math.Sqrt(SquareTime) % 1 == 0)
         return false;
       else
         return null;
