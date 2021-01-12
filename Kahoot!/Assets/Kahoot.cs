@@ -112,7 +112,7 @@ public class Kahoot : MonoBehaviour {
       Goal = UnityEngine.Random.Range(3, 6);
       for (int i = 0; i < 6; i++)
         Code += (Alphabet.IndexOf(Bomb.GetSerialNumber()[i]) + 1) % 10;
-      Debug.LogFormat("[Kahoot #{0}] The code for the Kahoot! game is {1}.", moduleId, Code);
+      Debug.LogFormat("[Kahoot! #{0}] The code for the Kahoot! game is {1}.", moduleId, Code);
     }
 
     void ButtonPress (KMSelectable Button) {
@@ -239,7 +239,7 @@ public class Kahoot : MonoBehaviour {
       PreviousQuestions.Add(QuestionNumber);
       TheQuestion.text = Questions[QuestionNumber];
       Shuffler.Shuffle();
-      Debug.LogFormat("[Kahoot #{0}] The question is \"{1}\" and the missing color is {2}.", moduleId, TheQuestion.text.Replace('\n', ' '), ColorsForLog[Shuffler[3]]);
+      Debug.LogFormat("[Kahoot! #{0}] The question is \"{1}\" and the missing color is {2}.", moduleId, TheQuestion.text.Replace('\n', ' '), ColorsForLog[Shuffler[3]]);
       yield return new WaitForSecondsRealtime(5f);
       StageTwoShit.gameObject.SetActive(true);
       LoadingShit.gameObject.SetActive(false);
@@ -475,7 +475,7 @@ public class Kahoot : MonoBehaviour {
       }
       for (int i = 0; i < 3; i++)
         if (Shuffler[i] == Answer)
-          Debug.LogFormat("[Kahoot #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
+          Debug.LogFormat("[Kahoot! #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
       yield return new WaitForSecondsRealtime(10f);
       GetComponent<KMBombModule>().HandleStrike();
       StageTwoShit.gameObject.SetActive(false);
