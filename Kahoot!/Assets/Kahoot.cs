@@ -478,7 +478,10 @@ public class Kahoot : MonoBehaviour {
           Debug.LogFormat("[Kahoot! #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
       yield return new WaitForSecondsRealtime(10f);
       GetComponent<KMBombModule>().HandleStrike();
+      TheQuestion.text = "Were you\ntooooooo slow?";
       StageTwoShit.gameObject.SetActive(false);
+      Stage = 0;
+      ContinueButton.gameObject.SetActive(true);
       LoadingShit.gameObject.SetActive(true);
     }
 
