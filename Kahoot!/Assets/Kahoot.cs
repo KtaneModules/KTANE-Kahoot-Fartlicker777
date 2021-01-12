@@ -86,7 +86,6 @@ public class Kahoot : MonoBehaviour {
         BigIfTrue.OnHighlightEnded += delegate () { MusicEnder(); Highlighted = false;};
         BigIfTrue.OnFocus += delegate () { Focused = true; };
         BigIfTrue.OnDefocus += delegate () { MusicEnder(); Focused = false;};
-        StageTwoShit.gameObject.SetActive(false);
         foreach (KMSelectable Button in AnswerChoicesButtons) {
           Button.OnInteract += delegate () { ButtonPress(Button); return false; };
         }
@@ -98,6 +97,7 @@ public class Kahoot : MonoBehaviour {
 
     void Start () {
       Hue = UnityEngine.Random.Range(0, 1f);
+      StageTwoShit.gameObject.SetActive(false);
       StartCoroutine(BackgroundColorChanger());
       Modules = Bomb.GetSolvableModuleNames().Count();
       Minutes = (int) (Bomb.GetTime() / 60);
@@ -123,6 +123,8 @@ public class Kahoot : MonoBehaviour {
           if (Answer == Shuffler[i]) {
             Stage++;
             if (Stage == Goal) {
+              StopAllCoroutines();
+              StartCoroutine(BackgroundColorChanger());
               GetComponent<KMBombModule>().HandlePass();
               EnterContinue.text = "Good job!";
               TheQuestion.text = "Secret defusing\npowers?";
@@ -189,7 +191,7 @@ public class Kahoot : MonoBehaviour {
     }
 
     void Update () {
-      if (!Focused && !Highlighted) {
+      if (SoundIThink != null && !Focused && !Highlighted) {
         SoundIThink.StopSound();
         SoundIThink = null;
       }
@@ -442,22 +444,22 @@ public class Kahoot : MonoBehaviour {
         switch (Shuffler[3]) {
           case 0:
           switch (SerialNumberLetters) {
-            case 0: case 1: case 2: Answer = 1; break;
-            case 3: case 4: Answer = 2; break;
+            case 2: Answer = 1; break;
+            case 3: Answer = 2; break;
             default: Answer = 3; break;
           }
           break;
           case 1:
           switch (SerialNumberLetters) {
-            case 0: case 1: case 2: Answer = 0; break;
-            case 3: case 4: Answer = 3; break;
+            case 2: Answer = 0; break;
+            case 3: Answer = 3; break;
             default: Answer = 2; break;
           }
           break;
           case 2:
           switch (SerialNumberLetters) {
-            case 0: case 1: case 2: Answer = 3; break;
-            case 3: case 4: Answer = 1; break;
+            case 2: Answer = 3; break;
+            case 3: Answer = 1; break;
             default: Answer = 0; break;
           }
           break;
@@ -476,6 +478,8 @@ public class Kahoot : MonoBehaviour {
           Debug.LogFormat("[Kahoot #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
       yield return new WaitForSecondsRealtime(10f);
       GetComponent<KMBombModule>().HandleStrike();
+      StageTwoShit.gameObject.SetActive(false);
+      LoadingShit.gameObject.SetActive(true);
     }
 
     bool? SquareAndPrimeChecker (int M) {
