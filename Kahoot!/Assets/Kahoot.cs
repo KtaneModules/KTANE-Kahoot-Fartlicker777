@@ -21,6 +21,8 @@ public class Kahoot : MonoBehaviour {
     public TextMesh EnterContinue;
     public TextMesh GamePIN;
     public TextMesh TheQuestion;
+    public TextMesh CountdownText;
+    public TextMesh LoadingText;
 
     public Material[] ColorsForButtons;
     public SpriteRenderer[] SymbolsForButtons;
@@ -86,6 +88,7 @@ public class Kahoot : MonoBehaviour {
         BigIfTrue.OnHighlightEnded += delegate () { MusicEnder(); Highlighted = false;};
         BigIfTrue.OnFocus += delegate () { Focused = true; };
         BigIfTrue.OnDefocus += delegate () { MusicEnder(); Focused = false;};
+        //BigIfTrue.OnCancel += delegate () { MusicEnder(); return false;};
         foreach (KMSelectable Button in AnswerChoicesButtons) {
           Button.OnInteract += delegate () { ButtonPress(Button); return false; };
         }
@@ -93,6 +96,11 @@ public class Kahoot : MonoBehaviour {
         if (Application.isEditor) {
             Focused = true;
         }
+        GetComponent<KMBombModule>().OnActivate += Activate;
+    }
+
+    void Activate () {
+      Minutes = (int) (Bomb.GetTime() / 60);
     }
 
     void Start () {
@@ -100,7 +108,6 @@ public class Kahoot : MonoBehaviour {
       StageTwoShit.gameObject.SetActive(false);
       StartCoroutine(BackgroundColorChanger());
       Modules = Bomb.GetSolvableModuleNames().Count();
-      Minutes = (int) (Bomb.GetTime() / 60);
       Batteries = Bomb.GetBatteryCount();
       Ports = Bomb.GetPortCount();
       if (Bomb.GetOnIndicators().Count() > Bomb.GetOffIndicators().Count())
@@ -113,6 +120,7 @@ public class Kahoot : MonoBehaviour {
       for (int i = 0; i < 6; i++)
         Code += (Alphabet.IndexOf(Bomb.GetSerialNumber()[i]) + 1) % 10;
       Debug.LogFormat("[Kahoot! #{0}] The code for the Kahoot! game is {1}.", moduleId, Code);
+      Debug.LogFormat("[Kahoot! #{0}] The amount of questions needing to be solved consecutively is {1}.", moduleId, Goal);
     }
 
     void ButtonPress (KMSelectable Button) {
@@ -233,6 +241,9 @@ public class Kahoot : MonoBehaviour {
       LoadingShit.gameObject.SetActive(true);
       StageTwoShit.gameObject.SetActive(false);
       QuestionNumber = UnityEngine.Random.Range(0, Questions.Length);
+      if (PreviousQuestions.Count() == 7) {
+        PreviousQuestions.Clear();
+      }
       for (int i = 0; i < PreviousQuestions.Count(); i++)
         while (QuestionNumber == PreviousQuestions[i])
           QuestionNumber = UnityEngine.Random.Range(0, Questions.Length);
@@ -240,7 +251,12 @@ public class Kahoot : MonoBehaviour {
       TheQuestion.text = Questions[QuestionNumber];
       Shuffler.Shuffle();
       Debug.LogFormat("[Kahoot! #{0}] The question is \"{1}\" and the missing color is {2}.", moduleId, TheQuestion.text.Replace('\n', ' '), ColorsForLog[Shuffler[3]]);
-      yield return new WaitForSecondsRealtime(5f);
+      LoadingText.text = "5";
+      for (int i = 0; i < 5; i++) {
+        yield return new WaitForSecondsRealtime(1f);
+        LoadingText.text = (4 - i).ToString();
+      }
+      LoadingText.text = string.Empty;
       StageTwoShit.gameObject.SetActive(true);
       LoadingShit.gameObject.SetActive(false);
       for (int i = 0; i < 3; i++) {
@@ -476,7 +492,11 @@ public class Kahoot : MonoBehaviour {
       for (int i = 0; i < 3; i++)
         if (Shuffler[i] == Answer)
           Debug.LogFormat("[Kahoot! #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
-      yield return new WaitForSecondsRealtime(10f);
+      CountdownText.text = "10";
+      for (int i = 0; i < 10; i++) {
+        yield return new WaitForSecondsRealtime(1f);
+        CountdownText.text = (9 - i).ToString();
+      }
       GetComponent<KMBombModule>().HandleStrike();
       TheQuestion.text = "Were you\ntooooooo slow?";
       StageTwoShit.gameObject.SetActive(false);
