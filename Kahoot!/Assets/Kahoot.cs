@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using KModkit;
 
@@ -542,27 +541,35 @@ public class Kahoot : MonoBehaviour {
     IEnumerator ProcessTwitchCommand (string Command) {
       Command = Command.Trim().ToUpper();
       string AlphabetTwoElectricBoogaloo = "QWERTYUIOPASDFGHJKLZXCVBNM";
-      if (Command == "CONTINUE")
+      if (Command == "CONTINUE"){
+        yield return null;
         EnterButton.OnInteract();
-      else if (Command == "TL")
+      }
+      else if (Command == "TL"){
+        yield return null;
         AnswerChoicesButtons[0].OnInteract();
-      else if (Command == "BL")
+      }
+      else if (Command == "BL"){
+        yield return null;
         AnswerChoicesButtons[1].OnInteract();
-      else if (Command == "BR")
+      }
+      else if (Command == "BR"){
+        yield return null;
         AnswerChoicesButtons[2].OnInteract();
+      }
       else {
         string[] Parameters = Command.Split(' ');
         if (Parameters[0] != "TYPE" || Parameters.Length != 2)
           goto GoToJail;
         if (Parameters[1].Length != 6 || Parameters[1].Any(x => AlphabetTwoElectricBoogaloo.Contains(x)))
           goto GoToJail;
+        yield return null;
         for (int i = 0; i < 6; i++) {
           HandleKey(Parameters[1][i]);
           yield return new WaitForSecondsRealtime(.1f);
         }
         EnterButton.OnInteract();
-        if (true)
-          yield break;
+        yield break;
         GoToJail:
         yield return "sendtochaterror I don't understand!";
       }
@@ -571,11 +578,13 @@ public class Kahoot : MonoBehaviour {
     IEnumerator TwitchHandleForcedSolve () {
       while (!moduleSolved) {
         if (!Activated) {
+          GetComponent<KMSelectable>().OnFocus();
           for (int i = 0; i < 6; i++) {
             HandleKey(Code[i]);
             yield return new WaitForSecondsRealtime(.1f);
           }
           EnterButton.OnInteract();
+          GetComponent<KMSelectable>().OnDefocus();
         }
         if (StageTwoShit.gameObject.activeSelf) {
           for (int i = 0; i < 3; i++)
