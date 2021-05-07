@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using KModkit;
 
@@ -571,11 +570,13 @@ public class Kahoot : MonoBehaviour {
     IEnumerator TwitchHandleForcedSolve () {
       while (!moduleSolved) {
         if (!Activated) {
+          GetComponent<KMSelectable>().OnFocus();
           for (int i = 0; i < 6; i++) {
             HandleKey(Code[i]);
             yield return new WaitForSecondsRealtime(.1f);
           }
           EnterButton.OnInteract();
+          GetComponent<KMSelectable>().OnDefocus();
         }
         if (StageTwoShit.gameObject.activeSelf) {
           for (int i = 0; i < 3; i++)
