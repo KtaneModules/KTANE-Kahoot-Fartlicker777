@@ -38,6 +38,7 @@ public class Kahoot : MonoBehaviour {
    static int moduleIdCounter = 1;
    int moduleId;
    private bool moduleSolved;
+   private bool onCorrectAnswerMenu;
 
    int[] Shuffler = { 0, 1, 2, 3 };
    List<int> PreviousQuestions = new List<int> { };
@@ -51,6 +52,8 @@ public class Kahoot : MonoBehaviour {
    int SerialNumberLast;
    int SerialNumberLetters;
    int Stage;
+
+   private int moduleTimer;
 
    private KeyCode[] TheKeys = {
         KeyCode.Backspace, KeyCode.Return, KeyCode.Alpha1, KeyCode.Keypad1, KeyCode.Alpha2, KeyCode.Keypad2, KeyCode.Alpha3, KeyCode.Keypad3,
@@ -102,6 +105,7 @@ public class Kahoot : MonoBehaviour {
 
    void Activate () {
       Minutes = (int) (Bomb.GetTime() / 60);
+      moduleTimer = TwitchPlaysActive ? 20 : 10;
    }
 
    void Start () {
@@ -146,10 +150,12 @@ public class Kahoot : MonoBehaviour {
                StopAllCoroutines();
                StartCoroutine(BackgroundColorChanger());
                TheQuestion.text = PossibleCorrects[UnityEngine.Random.Range(0, PossibleCorrects.Length)];
+               onCorrectAnswerMenu = true;
             }
             else {
                TheQuestion.text = "Were you tooooooo\nfast?";
                GetComponent<KMBombModule>().HandleStrike();
+               onCorrectAnswerMenu = true;
                StageTwoShit.gameObject.SetActive(false);
                StopAllCoroutines();
                StartCoroutine(BackgroundColorChanger());
@@ -184,8 +190,10 @@ public class Kahoot : MonoBehaviour {
             InputCommand = String.Empty;
          }
       }
-      else
+      else {
+         onCorrectAnswerMenu = false;
          StartCoroutine(QuestionChooser());
+      }
    }
 
    IEnumerator BackgroundColorChanger () {
@@ -493,13 +501,14 @@ public class Kahoot : MonoBehaviour {
       for (int i = 0; i < 3; i++)
          if (Shuffler[i] == Answer)
             Debug.LogFormat("[Kahoot! #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
-      CountdownText.text = "10";
-      for (int i = 0; i < 10; i++) {
+      CountdownText.text = moduleTimer.ToString();
+      for (int i = 0; i < moduleTimer; i++) {
          yield return new WaitForSecondsRealtime(1f);
-         CountdownText.text = (9 - i).ToString();
+         CountdownText.text = (moduleTimer - 1 - i).ToString();
       }
       GetComponent<KMBombModule>().HandleStrike();
       TheQuestion.text = "Were you\ntooooooo slow?";
+      onCorrectAnswerMenu = true;
       StageTwoShit.gameObject.SetActive(false);
       Stage = 0;
       ContinueButton.gameObject.SetActive(true);
@@ -536,6 +545,7 @@ public class Kahoot : MonoBehaviour {
          return null;
    }
 
+   bool TwitchPlaysActive;
 #pragma warning disable 414
    private readonly string TwitchHelpMessage = @"Use !{0} type ###### to enter in the room code. Use !{0} TL/BL/BR to press that button. Use !{0} continue to continue.";
 #pragma warning restore 414
@@ -572,8 +582,13 @@ public class Kahoot : MonoBehaviour {
          yield return "sendtochaterror I don't understand!";
       }
    }
-
+   
    IEnumerator TwitchHandleForcedSolve () {
+      if (onCorrectAnswerMenu)
+      {
+         EnterButton.OnInteract();
+         yield return new WaitForSecondsRealtime(.1f);
+      }
       while (!moduleSolved) {
          if (!Activated) {
             GetComponent<KMSelectable>().OnFocus();
