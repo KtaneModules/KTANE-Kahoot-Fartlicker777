@@ -1967,6 +1967,10 @@ MonoBehaviour:
   TheQuestion: {fileID: 102672859913853534}
   CountdownText: {fileID: 102631280170443446}
   LoadingText: {fileID: 102982158215332766}
+  AnswerChoicesButtons:
+  - {fileID: 114507312121954020}
+  - {fileID: 114923041935945818}
+  - {fileID: 114526427404450348}
   ColorsForButtons:
   - {fileID: 2100000, guid: a2420cfa96fa416419d13909aad25d61, type: 2}
   - {fileID: 2100000, guid: 51b663b34aefd404cb2ccb3dab714d77, type: 2}
@@ -1981,10 +1985,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 3aa07b423cb63f04fa891ffb2ffd98f4, type: 3}
   - {fileID: 21300000, guid: cf775f66638f493409051185f533c505, type: 3}
   - {fileID: 21300000, guid: d29ca6ce9cac0434d9e4aba8bb6b7500, type: 3}
-  AnswerChoicesButtons:
-  - {fileID: 114507312121954020}
-  - {fileID: 114923041935945818}
-  - {fileID: 114526427404450348}
   StageOneShit: {fileID: 1059144346208844}
   LoadingShit: {fileID: 1347605622755294}
   StageTwoShit: {fileID: 1574624056251988}

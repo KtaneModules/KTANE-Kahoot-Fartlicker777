@@ -42,16 +42,7 @@ public class Kahoot : MonoBehaviour {
 
    int[] Shuffler = { 0, 1, 2, 3 };
    List<int> PreviousQuestions = new List<int> { };
-   int Answer;
-   int Batteries;
-   int Goal;
-   int Minutes;
-   int Modules;
-   int Ports;
-   int QuestionNumber;
-   int SerialNumberLast;
-   int SerialNumberLetters;
-   int Stage;
+   int Answer, Batteries, Goal, Minutes, Modules, Ports, QuestionNumber, SerialNumberLast, SerialNumberLetters, Stage;
 
    private int moduleTimer;
 
@@ -115,15 +106,18 @@ public class Kahoot : MonoBehaviour {
       Modules = Bomb.GetSolvableModuleNames().Count();
       Batteries = Bomb.GetBatteryCount();
       Ports = Bomb.GetPortCount();
-      if (Bomb.GetOnIndicators().Count() > Bomb.GetOffIndicators().Count())
+      if (Bomb.GetOnIndicators().Count() > Bomb.GetOffIndicators().Count()) {
          Indicators = true;
-      else if (Bomb.GetOnIndicators().Count() < Bomb.GetOffIndicators().Count())
+      }
+      else if (Bomb.GetOnIndicators().Count() < Bomb.GetOffIndicators().Count()) {
          Indicators = false;
+      }
       SerialNumberLast = Bomb.GetSerialNumberNumbers().Last();
       SerialNumberLetters = Bomb.GetSerialNumberLetters().Count();
       Goal = UnityEngine.Random.Range(3, 6);
-      for (int i = 0; i < 6; i++)
+      for (int i = 0; i < 6; i++) {
          Code += (Alphabet.IndexOf(Bomb.GetSerialNumber()[i]) + 1) % 10;
+      }
       Debug.LogFormat("[Kahoot! #{0}] The code for the Kahoot! game is {1}.", moduleId, Code);
       Debug.LogFormat("[Kahoot! #{0}] The amount of questions needing to be solved consecutively is {1}.", moduleId, Goal);
    }
@@ -166,8 +160,9 @@ public class Kahoot : MonoBehaviour {
    }
 
    void MusicStarter () {
-      if (SoundIThink == null)
+      if (SoundIThink == null) {
          SoundIThink = Audio.PlaySoundAtTransformWithRef("Kahoot!", transform);
+      }
    }
 
    void MusicEnder () {
@@ -178,8 +173,9 @@ public class Kahoot : MonoBehaviour {
    }
 
    void EnterPress () {
-      if (moduleSolved)
+      if (moduleSolved) {
          return;
+      }
       if (EnterContinue.text == "Enter") {
          if (InputCommand == Code) {
             Activated = true;
@@ -214,26 +210,31 @@ public class Kahoot : MonoBehaviour {
       }
       for (int i = 0; i < TheKeys.Count(); i++) {
          if (Input.GetKeyDown(TheKeys[i]) && Focused && !Activated) {
-            if (InputCommand.Length == 6 && TheLetters[i].ToString() != "B".ToString() && TheLetters[i].ToString() != "E".ToString())
+            if (InputCommand.Length == 6 && TheLetters[i].ToString() != "B".ToString() && TheLetters[i].ToString() != "E".ToString()) {
                return;
+            }
             if (TheLetters[i].ToString() == "B".ToString()) {
-               if (InputCommand == String.Empty)
+               if (InputCommand == String.Empty) {
                   return;
+               }
                InputCommand = InputCommand.Substring(0, InputCommand.Length - 1);
                GamePIN.text = InputCommand.ToUpper();
             }
-            else if (TheLetters[i].ToString() == "E".ToString())
+            else if (TheLetters[i].ToString() == "E".ToString()) {
                EnterButton.OnInteract();
-            else
+            }
+            else {
                HandleKey(TheLetters[i]);
+            }
          }
       }
       if (InputCommand == String.Empty) {
          GamePIN.color = new Color32(118, 118, 118, 255);
          GamePIN.text = "Game PIN";
       }
-      else
+      else {
          GamePIN.color = new Color32(0, 0, 0, 255);
+      }
    }
 
    void HandleKey (char c) {
@@ -253,9 +254,11 @@ public class Kahoot : MonoBehaviour {
       if (PreviousQuestions.Count() == 7) {
          PreviousQuestions.Clear();
       }
-      for (int i = 0; i < PreviousQuestions.Count(); i++)
-         while (QuestionNumber == PreviousQuestions[i])
+      for (int i = 0; i < PreviousQuestions.Count(); i++) {
+         while (QuestionNumber == PreviousQuestions[i]) {
             QuestionNumber = UnityEngine.Random.Range(0, Questions.Length);
+         }
+      }
       PreviousQuestions.Add(QuestionNumber);
       TheQuestion.text = Questions[QuestionNumber];
       Shuffler.Shuffle();
@@ -498,9 +501,11 @@ public class Kahoot : MonoBehaviour {
             }
             break;
       }
-      for (int i = 0; i < 3; i++)
-         if (Shuffler[i] == Answer)
+      for (int i = 0; i < 3; i++) {
+         if (Shuffler[i] == Answer) {
             Debug.LogFormat("[Kahoot! #{0}] The answer is {1}.", moduleId, ColorsForLog[Shuffler[i]]);
+         }
+      }
       CountdownText.text = moduleTimer.ToString();
       for (int i = 0; i < moduleTimer; i++) {
          yield return new WaitForSecondsRealtime(1f);
@@ -568,10 +573,12 @@ public class Kahoot : MonoBehaviour {
       }
       else {
          string[] Parameters = Command.Split(' ');
-         if (Parameters[0] != "TYPE" || Parameters.Length != 2)
+         if (Parameters[0] != "TYPE" || Parameters.Length != 2) {
             goto GoToJail;
-         if (Parameters[1].Length != 6 || Parameters[1].Any(x => AlphabetTwoElectricBoogaloo.Contains(x)))
+         }
+         if (Parameters[1].Length != 6 || Parameters[1].Any(x => AlphabetTwoElectricBoogaloo.Contains(x))) {
             goto GoToJail;
+         }
          for (int i = 0; i < 6; i++) {
             HandleKey(Parameters[1][i]);
             yield return new WaitForSecondsRealtime(.1f);
@@ -582,10 +589,9 @@ public class Kahoot : MonoBehaviour {
          yield return "sendtochaterror I don't understand!";
       }
    }
-   
+
    IEnumerator TwitchHandleForcedSolve () {
-      if (onCorrectAnswerMenu)
-      {
+      if (onCorrectAnswerMenu) {
          EnterButton.OnInteract();
          yield return new WaitForSecondsRealtime(.1f);
       }
@@ -600,14 +606,17 @@ public class Kahoot : MonoBehaviour {
             GetComponent<KMSelectable>().OnDefocus();
          }
          if (StageTwoShit.gameObject.activeSelf) {
-            for (int i = 0; i < 3; i++)
-               if (Answer == Shuffler[i])
+            for (int i = 0; i < 3; i++) {
+               if (Answer == Shuffler[i]) {
                   AnswerChoicesButtons[i].OnInteract();
+               }
+            }
             yield return new WaitForSecondsRealtime(.1f);
             EnterButton.OnInteract();
          }
-         else
+         else {
             yield return new WaitForSeconds(1f);
+         }
       }
    }
 }
